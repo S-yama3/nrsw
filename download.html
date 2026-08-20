@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>ダウンロード・履歴管理</title>
+
+    <style>
+
+        body {
+            font-family: Arial, "Noto Sans JP", sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 80px auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            font-size: 30px;
+            color: #333333;
+        }
+
+        .description {
+            margin-bottom: 30px;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 19px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .download-btn {
+            background-color: #198754;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background-color: #146c43;
+        }
+
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #bb2d3b;
+        }
+
+        .back-btn {
+            margin-top: 30px;
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .back-btn:hover {
+            background-color: #5c636a;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #999999;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="container">
+
+        <h1>ダウンロード・履歴管理</h1>
+
+        <div class="description">
+            登録された履歴データを管理します。
+        </div>
+
+
+        <div class="menu">
+
+            <!-- Excelダウンロード -->
+
+            <button
+                class="download-btn"
+                onclick="downloadExcel()">
+
+                📊 全明細をExcelでダウンロード
+
+            </button>
+
+
+            <!-- 履歴全削除 -->
+
+            <button
+                class="delete-btn"
+                onclick="deleteAllHistory()">
+
+                🗑 履歴を全削除
+
+            </button>
+
+        </div>
+
+
+        <!-- 戻る -->
+
+        <button
+            class="back-btn"
+            onclick="location.href='index.html'">
+
+            ← メニューへ戻る
+
+        </button>
+
+
+        <div class="footer">
+
+            Event Tool
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        // ====================================
+        // ここにGASのウェブアプリURLを設定
+        // ====================================
+
+        const GAS_URL =
+            "https://script.google.com/macros/s/AKfycbzx_xNrcCHCnIU45KtMwBbv0p8hi5wrWA0zSMZdzWZCMJLeIMgherZNlnbXzHYq2uOR/exec";
+
+
+        // ====================================
+        // Excelダウンロード
+        // ====================================
+
+        function downloadExcel() {
+
+            if (
+                !GAS_URL ||
+                GAS_URL.includes("ここにGAS")
+            ) {
+
+                alert(
+                    "GASのウェブアプリURLが設定されていません。"
+                );
+
+                return;
+            }
+
+
+            // GASへ移動
+            window.location.href =
+                GAS_URL + "?action=download";
+
+        }
+
+
+        // ====================================
+        // 履歴全削除
+        // ====================================
+
+        function deleteAllHistory() {
+
+            const result = confirm(
+
+                "本当にすべての履歴を削除しますか？\n\n" +
+
+                "※この操作は元に戻せません。\n" +
+
+                "※1行目のヘッダーは残ります。"
+
+            );
+
+
+            if (!result) {
+
+                return;
+
+            }
+
+
+            if (
+                !GAS_URL ||
+                GAS_URL.includes("ここにGAS")
+            ) {
+
+                alert(
+                    "GASのウェブアプリURLが設定されていません。"
+                );
+
+                return;
+
+            }
+
+
+            // GASへ移動
+            window.location.href =
+                GAS_URL + "?action=delete";
+
+        }
+
+    </script>
+
+</body>
+
+</html>
