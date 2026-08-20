@@ -4,47 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登録フォーム</title>
+    <!-- QRコード生成ライブラリ (QRCode.js) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; }
-        .container { max-width: 500px; width: 100%; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
-        h2 { text-align: center; color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
-        input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; background-color: #007bff; color: white; padding: 14px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        #loading { display: none; text-align: center; margin-top: 15px; color: #666; }
-        .result-area { text-align: center; }
-        .qr-img { width: 250px; height: 250px; margin: 20px 0; }
-        .btn-download { display: inline-block; background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h2 { text-align: center; color: #2c3e50; margin-top: 0; }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+        #result-area {
+            display: none;
+            margin-top: 24px;
+            padding: 20px;
+            background: #eef9ff;
+            border: 1px solid #bce8f1;
+            border-radius: 6px;
+            text-align: center;
+        }
+        #qrcode {
+            display: inline-block;
+            margin: 15px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .download-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .info-list {
+            text-align: left;
+            margin-top: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
 
-<div class="container" id="mainContainer">
-    <h2>詳細入力フォーム</h2>
-    <form id="registrationForm">
-        <div class="form-group"><label>社名</label><input type="text" id="company" required></div>
-        <div class="form-group"><label>部署</label><input type="text" id="department"></div>
-        <div class="form-group"><label>役職</label><input type="text" id="position"></div>
-        <div class="form-group"><label>氏名</label><input type="text" id="name" required></div>
-        <div class="form-group"><label>メールアドレス</label><input type="email" id="email" required></div>
-        <div class="form-group"><label>電話番号</label><input type="tel" id="tel"></div>
-        <button type="submit" id="submitBtn">登録する</button>
-        <div id="loading">送信中...</div>
+<div class="container">
+    <h2>登録フォーム</h2>
+    <form id="regForm">
+        <div class="form-group">
+            <label>社名</label>
+            <input type="text" id="company" required>
+        </div>
+        <div class="form-group">
+            <label>部署</label>
+            <input type="text" id="department">
+        </div>
+        <div class="form-group">
+            <label>役職</label>
+            <input type="text" id="position">
+        </div>
+        <div class="form-group">
+            <label>氏名</label>
+            <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+            <label>メールアドレス</label>
+            <input type="email" id="email" required>
+        </div>
+        <div class="form-group">
+            <label>電話番号</label>
+            <input type="tel" id="phone">
+        </div>
+        <button type="submit" id="submitBtn">スプレッドシートに登録</button>
     </form>
+
+    <!-- 登録完了・結果表示エリア -->
+    <div id="result-area">
+        <h3>登録が完了しました</h3>
+        <p>以下のQRコードをクリックすると画像としてダウンロードできます。</p>
+        
+        <!-- QRコード表示用 -->
+        <div id="qrcode" title="クリックしてダウンロード"></div>
+        <div class="download-hint">※QRコードをクリックして保存</div>
+
+        <div class="info-list" id="infoList"></div>
+    </div>
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzu78JY6i4zvrxRjD_C7q-NUS3IU5hX18urI2X3WCjR4DmuWMDlRTpil91tu5ze9FQF/exec";
+    // ★先ほどコピーしたGASのウェブアプリのURLに書き換えてください
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzdevWJNUdf3nSLmuIfktgkJxCxWwRKMA20YOMbjySVzQtC_H0CUnNLdvNSEG2MCxzv/exec";
 
-    document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+    const form = document.getElementById('regForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const resultArea = document.getElementById('result-area');
+    const infoList = document.getElementById('infoList');
+    const qrContainer = document.getElementById('qrcode');
+
+    let generatedRegId = "";
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const loading = document.getElementById('loading');
+
+        // 1. 送信中はボタンをグレーアウト（無効化）
         submitBtn.disabled = true;
-        loading.style.display = 'block';
+        submitBtn.textContent = "送信中...";
 
         const formData = {
             company: document.getElementById('company').value,
@@ -52,43 +160,74 @@
             position: document.getElementById('position').value,
             name: document.getElementById('name').value,
             email: document.getElementById('email').value,
-            tel: document.getElementById('tel').value
+            phone: document.getElementById('phone').value
         };
 
-        try {
-            const response = await fetch(GAS_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const result = await response.json();
+        // GASへ送信
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === "success") {
+                generatedRegId = data.regId;
 
-            if(result.status === "success") {
-                // QRコード生成 (Google Chart API使用)
-                const qrText = "登録番号:" + result.regNumber + " 氏名:" + formData.name;
-                const qrUrl = "https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=" + encodeURIComponent(qrText);
-                
-                document.getElementById('mainContainer').innerHTML = `
-                    <div class="result-area">
-                        <h2 style="color:green;">登録完了</h2>
-                        <p>登録番号：<strong>${result.regNumber}</strong></p>
-                        <p>${formData.company} ${formData.name} 様</p>
-                        <img src="${qrUrl}" class="qr-img" alt="QRコード">
-                        <br>
-                        <a href="${qrUrl}" download="QRCode_${result.regNumber}.png" class="btn-download">QRコードをダウンロード</a>
-                        <br><br>
-                        <button onclick="location.reload()">続けて登録する</button>
-                    </div>
+                // 2. 登録内容のテキスト表示
+                infoList.innerHTML = `
+                    <strong>登録番号:</strong> ${data.regId}<br>
+                    <strong>タイムスタンプ:</strong> ${data.timestamp}<br>
+                    <strong>社名:</strong> ${formData.company}<br>
+                    <strong>氏名:</strong> ${formData.name}
                 `;
+
+                // 3. QRコードの生成（QRの中身を登録番号や専用URLなどに設定可能）
+                qrContainer.innerHTML = ""; // 初期化
+                const qrcode = new QRCode(qrContainer, {
+                    text: data.regId, // ここにスキャン時に読み取らせたい文字列やURLを指定
+                    width: 150,
+                    height: 150
+                });
+
+                // フォームを隠して結果エリアを表示
+                form.style.display = "none";
+                resultArea.style.display = "block";
             } else {
-                throw new Error(result.message);
+                alert("エラーが発生しました: " + data.message);
+                resetButton();
             }
-        } catch (error) {
+        })
+        .catch(error => {
             console.error('Error:', error);
-            alert('送信に失敗しました。もう一度お試しください。');
-            submitBtn.disabled = false;
-            loading.style.display = 'none';
+            alert("通信エラーが発生しました。");
+            resetButton();
+        });
+    });
+
+    function resetButton() {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "スプレッドシートに登録";
+    }
+
+    // 4. QRコード画像クリック時のダウンロード処理
+    qrContainer.addEventListener('click', function() {
+        const img = qrContainer.querySelector('img');
+        const canvas = qrContainer.querySelector('canvas');
+        
+        let imageUrl = "";
+        if (img && img.src) {
+            imageUrl = img.src;
+        } else if (canvas) {
+            imageUrl = canvas.toDataURL("image/png");
+        }
+
+        if (imageUrl) {
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = `qrcode_${generatedRegId}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     });
 </script>
