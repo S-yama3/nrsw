@@ -5,109 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登録フォーム</title>
     <style>
-        body { 
-            font-family: sans-serif; 
-            background-color: #f4f7f6; 
-            margin: 0; 
-            padding: 15px; /* スマホで見やすいよう余白を少し調整 */
-        }
-        .container { 
-            max-width: 500px; 
-            width: 100%; /* スマホ画面で幅いっぱいに広がるように変更 */
-            margin: 20px auto; 
-            background: #fff; 
-            padding: 20px; /* モバイルで窮屈にならないパディング */
-            border-radius: 8px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            box-sizing: border-box; /* パディングを含めて幅を計算 */
-        }
-        h2 { 
-            text-align: center; 
-            color: #333; 
-            font-size: 1.5rem;
-        }
-        .form-group { 
-            margin-bottom: 15px; 
-        }
-        label { 
-            display: block; 
-            margin-bottom: 6px; 
-            font-weight: bold; 
-            color: #555; 
-            font-size: 0.95rem;
-        }
-        input[type="text"], input[type="email"], input[type="tel"] {
-            width: 100%; 
-            padding: 12px; /* スマホでタップしやすいよう高さを確保 */
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
-            box-sizing: border-box;
-            font-size: 16px; /* スマホでの入力時に自動ズームが起きないように16px以上を維持 */
-        }
-        button {
-            width: 100%; 
-            background-color: #007bff; 
-            color: white; 
-            padding: 14px; /* タップしやすい大きさ */
-            border: none; 
-            border-radius: 4px; 
-            font-size: 16px; 
-            cursor: pointer;
-        }
-        button:hover { 
-            background-color: #0056b3; 
-        }
-        #loading { 
-            display: none; 
-            text-align: center; 
-            margin-top: 15px; 
-            color: #666; 
-        }
+        body { font-family: sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; }
+        .container { max-width: 500px; width: 100%; margin: 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+        h2 { text-align: center; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="email"], input[type="tel"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; background-color: #007bff; color: white; padding: 14px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #loading { display: none; text-align: center; margin-top: 15px; color: #666; }
+        .result-area { text-align: center; }
+        .qr-img { width: 250px; height: 250px; margin: 20px 0; }
+        .btn-download { display: inline-block; background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="mainContainer">
     <h2>詳細入力フォーム</h2>
     <form id="registrationForm">
-        <div class="form-group">
-            <label for="company">社名</label>
-            <input type="text" id="company" name="company" required>
-        </div>
-        <div class="form-group">
-            <label for="department">部署</label>
-            <input type="text" id="department" name="department">
-        </div>
-        <div class="form-group">
-            <label for="position">役職</label>
-            <input type="text" id="position" name="position">
-        </div>
-        <div class="form-group">
-            <label for="name">氏名</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-        <div class="form-group">
-            <label for="email">メールアドレス</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        <div class="form-group">
-            <label for="tel">電話番号</label>
-            <input type="tel" id="tel" name="tel">
-        </div>
+        <div class="form-group"><label>社名</label><input type="text" id="company" required></div>
+        <div class="form-group"><label>部署</label><input type="text" id="department"></div>
+        <div class="form-group"><label>役職</label><input type="text" id="position"></div>
+        <div class="form-group"><label>氏名</label><input type="text" id="name" required></div>
+        <div class="form-group"><label>メールアドレス</label><input type="email" id="email" required></div>
+        <div class="form-group"><label>電話番号</label><input type="tel" id="tel"></div>
         <button type="submit" id="submitBtn">登録する</button>
-        <div id="loading">送信中...しばらくお待ちください。</div>
+        <div id="loading">送信中...</div>
     </form>
 </div>
 
 <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxxjQukPC_ZkLHgKMGgWXXnwlU5pXa5o6zFObD7jk3wvq86OHSAuc6CiK3DR2z6bjwY/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzu78JY6i4zvrxRjD_C7q-NUS3IU5hX18urI2X3WCjR4DmuWMDlRTpil91tu5ze9FQF/exec";
 
     document.getElementById('registrationForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const submitBtn = document.getElementById('submitBtn');
         const loading = document.getElementById('loading');
-        
         submitBtn.disabled = true;
         loading.style.display = 'block';
 
@@ -121,21 +56,37 @@
         };
 
         try {
-            await fetch(GAS_URL, {
+            const response = await fetch(GAS_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
+            const result = await response.json();
 
-            alert('登録が完了しました。ご入力いただいたメールアドレス宛にQRコード付きの確認メールを送信しました。');
-            document.getElementById('registrationForm').reset();
+            if(result.status === "success") {
+                // QRコード生成 (Google Chart API使用)
+                const qrText = "登録番号:" + result.regNumber + " 氏名:" + formData.name;
+                const qrUrl = "https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl=" + encodeURIComponent(qrText);
+                
+                document.getElementById('mainContainer').innerHTML = `
+                    <div class="result-area">
+                        <h2 style="color:green;">登録完了</h2>
+                        <p>登録番号：<strong>${result.regNumber}</strong></p>
+                        <p>${formData.company} ${formData.name} 様</p>
+                        <img src="${qrUrl}" class="qr-img" alt="QRコード">
+                        <br>
+                        <a href="${qrUrl}" download="QRCode_${result.regNumber}.png" class="btn-download">QRコードをダウンロード</a>
+                        <br><br>
+                        <button onclick="location.reload()">続けて登録する</button>
+                    </div>
+                `;
+            } else {
+                throw new Error(result.message);
+            }
         } catch (error) {
             console.error('Error:', error);
-            alert('送信に失敗しました。時間をおいて再度お試しください。');
-        } finally {
+            alert('送信に失敗しました。もう一度お試しください。');
             submitBtn.disabled = false;
             loading.style.display = 'none';
         }
