@@ -2,51 +2,103 @@
 <html>
   <head>
     <base target="_top">
+    <meta charset="utf-8">
     <style>
-      body { font-family: sans-serif; padding: 30px; line-height: 1.6; }
-      h1 { color: #333; }
-      button { padding: 12px 24px; margin: 10px 10px 10px 0; cursor: pointer; border-radius: 4px; font-size: 16px; border: none; }
+      body { 
+        font-family: sans-serif; 
+        padding: 40px; 
+        line-height: 1.6; 
+        background-color: #f9f9f9;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      h1 { font-size: 24px; margin-bottom: 20px; color: #2c3e50; }
+      .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+      }
+      button { 
+        padding: 12px 24px; 
+        cursor: pointer; 
+        border-radius: 4px; 
+        font-size: 16px; 
+        border: none; 
+        font-weight: bold;
+        transition: opacity 0.2s;
+      }
+      button:hover { opacity: 0.85; }
       .btn-download { background-color: #4CAF50; color: white; }
       .btn-clear { background-color: #f44336; color: white; }
     </style>
   </head>
   <body>
-    <h1>データ管理パネル</h1>
-    <button class="btn-download" onclick="downloadCsv()">データをCSVダウンロード</button>
-    <button class="btn-clear" onclick="clearData()">全データ削除</button>
+    <div class="container">
+      <h1>データ管理パネル</h1>
+      <p>スプレッドシートのデータのダウンロードや一括削除が行えます。</p>
+      
+      <div class="button-group">
+        <button class="btn-download" onclick="downloadCsv()">CSVダウンロード</button>
+        <button class="btn-clear" onclick="clearData()">全データ削除</button>
+      </div>
+    </div>
 
     <script>
+      // CSVダウンロード処理
       function downloadCsv() {
-        // ボタンを押すとCSV生成関数を呼び出す
-        google.script.run.withSuccessHandler(csv => {
-          // BOMを付与してUTF-8でダウンロード（Excelでの文字化け防止）
-          const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], {type: 'text/csv'});
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'data_export.csv';
-          a.click();
-        }).getSheetDataAsCsv();
+        google.script.run
+          .withSuccessHandler(csv => {
+            if (!csv) {
+              alert('データが存在しません。');
+              return;
+            }
+            // BOMを付与してUTF-8でダウンロード（Excelでの文字化け防止）
+            const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'spreadsheet_data.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+          })
+          .withFailureHandler(error => {
+            alert('エラーが発生しました: ' + error.message);
+          })
+          .getSheetDataAsCsv();
       }
 
+      // データ削除処理（パスワード認証付き）
       function clearData() {
-        // パスワード入力ダイアログを表示
+        // パスワード入力ダイアログ
         const password = prompt('データを削除するにはパスワードを入力してください：');
         
-        // キャンセルされた場合
         if (password === null) {
-          return;
+          return; // キャンセルされた場合
         }
         
-        // パスワードのチェック（仮パスワード: 1234）
+        // 仮パスワードのチェック
         if (password !== '1234') {
           alert('パスワードが間違っています。');
           return;
         }
 
-        // 確認メッセージ
+        // 最終確認
         if (confirm('本当に全てのデータを削除しますか？\nこの操作は元に戻せません。')) {
-          google.script.run.withSuccessHandler(() => alert('削除が完了しました')).clearData();
+          google.script.run
+            .withSuccessHandler(() => {
+              alert('削除が完了しました。');
+            })
+            .withFailureHandler(error => {
+              alert('削除に失敗しました: ' + error.message);
+            })
+            .clearData();
         }
       }
     </script>
