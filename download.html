@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
-    <base target="_top">
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ管理パネル</title>
     <style>
       body { 
         font-family: sans-serif; 
@@ -51,10 +52,19 @@
     </div>
 
     <script>
+      // ご自身のGASのウェブアプリのURLを指定してください
+      const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0rtOVgRpU447yXFZK7ZZmIsNF2316b_5zhyzgQ5bnvRKum4MQOqctCZN2fn4nWe7u/exec";
+
       // CSVダウンロード処理
       function downloadCsv() {
-        google.script.run
-          .withSuccessHandler(csv => {
+        fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: "getCsv" })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            const csv = data.csv;
             if (!csv) {
               alert('データが存在しません。');
               return;
@@ -67,38 +77,44 @@
             a.download = 'spreadsheet_data.csv';
             a.click();
             URL.revokeObjectURL(url);
-          })
-          .withFailureHandler(error => {
-            alert('エラーが発生しました: ' + error.message);
-          })
-          .getSheetDataAsCsv();
+          } else {
+            alert('エラーが発生しました: ' + data.message);
+          }
+        })
+        .catch(error => {
+          alert('通信エラーが発生しました: ' + error);
+        });
       }
 
       // データ削除処理（パスワード認証付き）
       function clearData() {
-        // パスワード入力ダイアログ
-        const password = prompt('データを削除するにはパスワードを入力してください：');
+        const password = document.prompt ? prompt('データを削除するにはパスワードを入力してください：') : window.prompt('データを削除するにはパスワードを入力してください：');
         
         if (password === null) {
           return; // キャンセルされた場合
         }
         
-        // 仮パスワードのチェック
         if (password !== '1234') {
           alert('パスワードが間違っています。');
           return;
         }
 
-        // 最終確認
         if (confirm('本当に全てのデータを削除しますか？\nこの操作は元に戻せません。')) {
-          google.script.run
-            .withSuccessHandler(() => {
+          fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "clearData", password: password })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === "success") {
               alert('削除が完了しました。');
-            })
-            .withFailureHandler(error => {
-              alert('削除に失敗しました: ' + error.message);
-            })
-            .clearData();
+            } else {
+              alert('削除に失敗しました: ' + data.message);
+            }
+          })
+          .catch(error => {
+            alert('通信エラーが発生しました: ' + error);
+          });
         }
       }
     </script>
