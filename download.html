@@ -1,47 +1,54 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理画面</title>
+<html>
+  <head>
+    <base target="_top">
     <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        button { padding: 15px 30px; margin: 10px; cursor: pointer; border: none; border-radius: 5px; color: white; font-size: 16px; }
+      body { font-family: sans-serif; padding: 30px; line-height: 1.6; }
+      h1 { color: #333; }
+      button { padding: 12px 24px; margin: 10px 10px 10px 0; cursor: pointer; border-radius: 4px; font-size: 16px; border: none; }
+      .btn-download { background-color: #4CAF50; color: white; }
+      .btn-clear { background-color: #f44336; color: white; }
     </style>
-</head>
-<body>
-    <h1>管理メニュー</h1>
-    <button onclick="downloadCsv()" style="background-color: #27ae60;">全データダウンロード(CSV)</button>
-    <button onclick="clearData()" style="background-color: #c0392b;">全データ削除</button>
+  </head>
+  <body>
+    <h1>データ管理パネル</h1>
+    <button class="btn-download" onclick="downloadCsv()">データをCSVダウンロード</button>
+    <button class="btn-clear" onclick="clearData()">全データ削除</button>
 
     <script>
-        // ★GASのウェブアプリURLを入力してください
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyqeydy8DAICtusLXkc20koJA3RXZzJo8JdNPMhWWLy90Twhr1BsrTDyS2xmrWK0itc/exec";
+      function downloadCsv() {
+        // ボタンを押すとCSV生成関数を呼び出す
+        google.script.run.withSuccessHandler(csv => {
+          // BOMを付与してUTF-8でダウンロード（Excelでの文字化け防止）
+          const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], {type: 'text/csv'});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'data_export.csv';
+          a.click();
+        }).getSheetDataAsCsv();
+      }
 
-        async function downloadCsv() {
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({action: "download"})
-            });
-            const csv = await response.text();
-            const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], {type: 'text/csv;charset=utf-8'});
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = "data_list.csv";
-            link.click();
+      function clearData() {
+        // パスワード入力ダイアログを表示
+        const password = prompt('データを削除するにはパスワードを入力してください：');
+        
+        // キャンセルされた場合
+        if (password === null) {
+          return;
+        }
+        
+        // パスワードのチェック（仮パスワード: 1234）
+        if (password !== '1234') {
+          alert('パスワードが間違っています。');
+          return;
         }
 
-        async function clearData() {
-            const password = prompt("パスワードを入力してください");
-            if (!password) return;
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify({action: "clear", password: password})
-            });
-            const result = await response.json();
-            alert(result.message);
+        // 確認メッセージ
+        if (confirm('本当に全てのデータを削除しますか？\nこの操作は元に戻せません。')) {
+          google.script.run.withSuccessHandler(() => alert('削除が完了しました')).clearData();
         }
+      }
     </script>
-</body>
+  </body>
 </html>
